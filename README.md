@@ -18,11 +18,10 @@ entropy@undefined:~/Pyshell$ python3 pyshell.py asm/shell.32bit.nasm
   - `priv_shell.32bit.nasm`     (Basic shell with privilege restoration)
     
  ## Roadmap:
-  - Define architecture: elf, bin, etc...
+  - Define architecture: i386, at&t
+  - Define output: hex string, binary, etc...
   - Add shellcodes:
     - Read a file and print the content
-    - Shell bound to a tcp port
-    - Reverse shell over tcp
     - 64 bits shellcodes
   - Possibility to specify options in shellcode: `File to read`, `Ip:Port`, `etc...`
   - Encoded shellcode with a stub
