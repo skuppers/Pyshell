@@ -3,23 +3,18 @@ from subprocess import getoutput
 import os
 import sys
 
-def prerequesites():
-    ready = True
-    if (getoutput("which nasm") == ''):
-        ready = False
-    if (getoutput("which objdump") == ''):
-        ready = False
-    return ready
-
-def dump_file(filename):
+def dump_file(filename, verbose):
     dest = filename.replace(".nasm", ".o")
     tmp = getoutput("nasm -f elf32 %s -o %s"%(filename,dest))
     if 'error' in tmp:
         print("[!] Error in the asm file.")
-        exit(42);
+        exit(42)
+    
     tmp = getoutput("objdump -d %s"%dest)
+    if verbose:
+        print ("=> objdump: %s"%tmp)
+        print("")
     getoutput("rm %s"%dest)
-    #print ("Output: %s"%tmp)
     opcodes = ''
     for line in tmp.split('\n')[7:]:
         tmp = line.split(':',1)
@@ -36,21 +31,30 @@ def encode(lbyte):
     formatted_lbyte = ''.join(["\\x"+lbyte[idx]+lbyte[idx+1] for idx in range(0, len(lbyte)-1,2)])
     return formatted_lbyte
 
-def format_output(dmp, width=8):
-    dmp = dmp.split('\\x')[1:]
-    return '\\x'+'\n\\x'.join(['\\x'.join(dmp[i:i+width]) for i in range(0,len(dmp), width)])
-
 def run(options):
     if options.file:
-        encoded = encode(dump_file(options.file))
+        encoded = encode(dump_file(options.file, options.verbose))
         print('[+] Encoded:\n', encoded)
 
-if not prerequesites():
-    print("[!] Pyshell requires nasm and objdump!")
-    sys.exit(1)
-else:
+def dependencies():
+    ready = True
+    if (getoutput("which nasm") == ''):
+        ready = False
+    if (getoutput("which objdump") == ''):
+        ready = False
+    return ready
+
+def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("file", help="The nasm file you want to convert into shellcode.") 
-   # parser.add_argument("-v")
-    run(parser.parse_args()) 
-    sys.exit(0);
+    parser.add_argument("-v", "--verbose", action="store_true", help="Enables verbose output")
+    #parser.add_argument("-b", "--binary", action="store_true", dest='binary_name', help="Export shellcode as a binary")
+    return parser.parse_args()
+
+if __name__ == "__main__":
+    # Execute if run as a script
+    if not dependencies():
+        print("[!] Pyshell requires nasm and objdump!")
+        sys.exit(1)
+    run(parse_arguments()) 
+    sys.exit(0)
