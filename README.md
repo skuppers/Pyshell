@@ -16,6 +16,8 @@ entropy@undefined:~/Pyshell$ python3 pyshell.py asm/shell.32bit.nasm
  They are some handmade shellcodes already in the `asm` directory:
   - `shell.32bit.nasm`          (Standart shellcode that pops a shell)
   - `priv_shell.32bit.nasm`     (Basic shell with privilege restoration)
+  - `bound_shell.32bit.nasm`    (Shell bound to a port. Default 31337)
+  - `rev_shell.32bit.nasm`      (Reverse tcp shell. wip.)
     
  ## Roadmap:
   - Define architecture: i386, at&t
