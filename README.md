@@ -20,7 +20,7 @@ entropy@undefined:~/Pyshell$ python3 pyshell.py asm/shell.32bit.nasm
   - `rev_shell.32bit.nasm`      (Reverse tcp shell. wip.)
     
  ## Roadmap:
-  - Define architecture and distro: linux,bsd, i386, at&t, etc
+  - Define architecture and distro: linux, bsd, mips, i386, at&t, etc
   - Define output: hex string, binary, etc...
   - Add shellcodes:
     - Read a file and print the content
