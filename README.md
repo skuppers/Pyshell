@@ -24,11 +24,9 @@ entropy@undefined:~/Pyshell$ python3 pyshell.py asm/shell.32bit.nasm
   - `shell.32bit.nasm`          (Standart shellcode that pops a shell)
   - `priv_shell.32bit.nasm`     (Basic shell with privilege restoration)
   - `bound_shell.32bit.nasm`    (Shell bound to a port. Default 31337)
-  - `rev_shell.32bit.nasm`      (Reverse tcp shell. wip.)
+  - `rev_shell.32bit.nasm`      (Reverse tcp shell. Default 127.1 port 31337)
     
  ## Roadmap:
-  - Define architecture and distro: linux, bsd, mips, i386, at&t, etc
-  - Define output: hex string, binary, etc...
   - Add shellcodes:
     - Read a file and print the content
     - 64 bits shellcodes
