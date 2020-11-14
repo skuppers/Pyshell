@@ -1,4 +1,5 @@
 BITS 32
+; Simple shell '/bin/sh'
 ; Made by skuppers: skuppers@student.42.fr
 
 section .text

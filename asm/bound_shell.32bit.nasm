@@ -1,6 +1,6 @@
 BITS 32
-; Simple 
-;
+; Simple bound shell
+; Bound to port 31337
 ; Written by skuppers: skuppers@student.42.fr
 
 global _start
