@@ -35,6 +35,12 @@ def run(options):
     if options.file:
         encoded = encode(dump_file(options.file, options.verbose))
         print('[+] Encoded:\n', encoded)
+        if options.binary:
+            tmp = getoutput("cp ./exec/tester.c shellcode.c")
+            tmp = getoutput("sed -i 's/<insert_here>/%s/g' shellcode.c"%(encoded))
+            tmp = getoutput("gcc -m32 -fno-stack-protector -z execstack -o shellcode.bin shellcode.c")
+            tmp = getoutput("rm shellcode.c")
+            print("\nShellcode exported in shellcode.bin")
 
 def dependencies():
     ready = True
@@ -48,7 +54,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("file", help="The nasm file you want to convert into shellcode.") 
     parser.add_argument("-v", "--verbose", action="store_true", help="Enables verbose output")
-    #parser.add_argument("-b", "--binary", action="store_true", dest='binary_name', help="Export shellcode as a binary")
+    parser.add_argument("-b", "--binary", action="store_true", help="Export shellcode as a binary")
     return parser.parse_args()
 
 if __name__ == "__main__":
